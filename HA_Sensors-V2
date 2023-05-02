@@ -1,0 +1,63 @@
+### this version includes a Tilt sensors 
+
+## YAML Part on HA Server: 
+
+sensor:
+  - platform: rest
+    resource: http://<IP_ADDRESS_OF_RASPBERRY_PI>:8000/temperature
+    name: Temperature Sensor
+    value_template: '{{ value_json.temperature }}'
+    unit_of_measurement: '°C'
+    scan_interval: 5
+  - platform: rest
+    resource: http://<IP_ADDRESS_OF_RASPBERRY_PI>:8000/temperature
+    name: Humidity Sensor
+    value_template: '{{ value_json.humidity }}'
+    unit_of_measurement: '%'
+    scan_interval: 5
+  - platform: rest
+    resource: http://<IP_ADDRESS_OF_RASPBERRY_PI>:8000/motion
+    name: Motion Sensor
+    value_template: '{{ value_json.motion }}'
+    scan_interval: 5
+  - platform: rest
+    resource: http://<IP_ADDRESS_OF_RASPBERRY_PI>:8000/tilt
+    name: Tilt Sensor
+    value_template: '{{ value_json.tilt }}'
+    scan_interval: 5
+
+
+
+# Python part on the PI
+
+import RPi.GPIO as GPIO
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+# Set up the PIR sensor
+PIR_PIN = 18
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(PIR_PIN, GPIO.IN)
+
+# Set up the tilt sensor
+TILT_PIN = 27
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(TILT_PIN, GPIO.IN)
+
+@app.route('/motion')
+def get_motion():
+    if GPIO.input(PIR_PIN):
+        return jsonify({'motion': True})
+    else:
+        return jsonify({'motion': False})
+
+@app.route('/tilt')
+def get_tilt():
+    if GPIO.input(TILT_PIN):
+        return jsonify({'tilt': True})
+    else:
+        return jsonify({'tilt': False})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)
