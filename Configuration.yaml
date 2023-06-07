@@ -1,0 +1,72 @@
+mqtt:
+  sensor:
+  - platform: mqtt
+    state_topic: "home/sensors/dht11_1_temperature"
+    name: "DHT11 1 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - platform: mqtt
+    state_topic: "home/sensors/dht11_1_humidity"
+    name: "DHT11 1 Humidity"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - platform: mqtt
+    state_topic: "home/sensors/dht11_2_temperature"
+    name: "DHT11 2 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - platform: mqtt
+    state_topic: "home/sensors/dht11_2_humidity"
+    name: "DHT11 2 Humidity"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - platform: mqtt
+    state_topic: "home/sensors/dht11_3_temperature"
+    name: "DHT11 3 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - platform: mqtt
+    state_topic: "home/sensors/dht11_3_humidity"
+    name: "DHT11 3 Humidity"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - state_topic: "home/sensors/ds18b20_temperature"
+    name: "DS18B20 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+
+  - state_topic: "home/sensors/ds18b20_temperature"
+    name: "DS18B20 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ (float(value_json.sensor_value) * 9/5 + 32) | round(2) }}"
+
+
+
+
+
+
+  - state_topic: "home/sensors/ds18b20_temperature"
+    name: "Piscine Fahrenheit"
+    unit_of_measurement: "°F"
+    value_template: "{{ (states('value_json.sensor_value') | float * 9/5 + 32) | round(2) }}"
+
+
+
+- platform: template
+    sensors:
+      piscine_fahrenheit:
+        friendly_name: "Piscine Fahrenheit"
+        unit_of_measurement: "°F"
+        value_template: "{{ (states('sensor.piscine_celsius') | float * 9/5 + 32) | round(2) }}"
+
+
+
+#### NEED TO CONFIRM NEWEST VERSION AND BACK IT UP ####
+# June 7th 2023 #
