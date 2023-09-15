@@ -1,33 +1,10 @@
-############################################################
-####### SCRIPT LAST VERSION MAY 30TH 2023 11H33  ############
-############################################################
-# BY VINCENT CHARRON
-
-#Set up MQTT broker:
-
-#Install and configure an MQTT broker on the Raspberry Pi. Mosquitto is a popular MQTT broker that you can install by running the command: 
-#       sudo apt-get install mosquitto mosquitto-clients
-#Start the Mosquitto service: 
-#       sudo systemctl start mosquitto
-#You may also want to enable the Mosquitto service to start on boot: 
-#       sudo systemctl enable mosquitto 
-
-#Install necessary libraries:
-#   Install the w1thermsensor library for reading the temperature from the DS18B20 sensor by running: 
-#       sudo pip install w1thermsensor
-#   Install the paho-mqtt library for MQTT communication by running: 
-#       sudo pip install paho-mqtt
-
-#Create a Python script:
-
-# nano SensorsPi_V05-2023.py
-
 import time
 import json
+from pms5003 import PMS5003
 import Adafruit_DHT
-import RPi.GPIO as GPIO
 from w1thermsensor import W1ThermSensor
 import paho.mqtt.client as mqtt
+import RPi.GPIO as GPIO
 
 # MQTT broker configuration
 mqtt_broker = "10.1.1.16"  # Change to the IP address of your MQTT broker
@@ -40,6 +17,11 @@ mqtt_topic = "home/sensors"  # MQTT topic for publishing sensor readings
 client = mqtt.Client()
 client.username_pw_set(mqtt_username, mqtt_password)
 client.connect(mqtt_broker, mqtt_port, 60)
+
+
+# Initialize the PMS5003 sensor
+pms5003_sensor = PMS5003()
+
 
 # Publish sensor readings
 def publish_sensor_reading(sensor_name, sensor_value):
@@ -57,8 +39,14 @@ dht_sensors = [
     {"name": "dht11_3", "pin": 27}
 ]
 
+
 # DS18B20 Sensor Configuration
 ds18b20_sensor = W1ThermSensor()
+
+# GPIO Configuration
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(14, GPIO.OUT)  # Set GPIO14 (TXD) as an output pin
 
 
 while True:
@@ -69,31 +57,24 @@ while True:
             publish_sensor_reading(sensor["name"] + "_temperature", round(temperature, 2))
             publish_sensor_reading(sensor["name"] + "_humidity", round(humidity, 2))
 
-    # Read DS18B20 sensor * un comment for Celsius
-    # ds18b20_temperature = ds18b20_sensor.get_temperature()
-
-    #MY Test Farenheit * comment for celsius
-    ds18b20_temperature = round(ds18b20_sensor.get_temperature() * 9/5 + 32, 2)
-    
+    # Read DS18B20 sensor
+    ds18b20_temperature = ds18b20_sensor.get_temperature()
     publish_sensor_reading("ds18b20_temperature", round(ds18b20_temperature, 2))
-    
-    time.sleep(5)  # Publish the data every 5 seconds
+
+try:
+        # Read PMS5003 sensor data
+        pms_data = pms5003_sensor.read()
+
+        # Extract relevant sensor readings
+        pm25 = pms_data.pm_ug_per_m3(2.5)
+        pm10 = pms_data.pm_ug_per_m3(10)
+
+        # Publish sensor readings
+        publish_sensor_reading("pms5003_pm25", pm25)
+        publish_sensor_reading("pms5003_pm10", pm10)
+
+except Exception as e:
+        print(f"Error reading PMS5003 sensor: {e}")
 
 
-
-
-
-
-
-
-
-
-# Make sure the script runs in the background at restart by adding it here:
-# sudo nano /etc/rc.local
-# add a line with:
-# python3 /home/sensor/SensorsPi_V05-2023.py
-
-
-
-### Finaly I had to create the script as a service to be able to run in at boot in the background
-
+time.sleep(5)  # Publish the data every 5 seconds

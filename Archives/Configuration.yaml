@@ -1,0 +1,115 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+sensor:
+  - platform: fitbit
+    clock_format: 12H
+    monitored_resources:
+      - "body/weight"
+      - "devices/battery"
+      - "sleep/minutesAsleep"
+
+
+mqtt:
+  sensor:
+  - state_topic: "home/sensors/dht11_1_temperature"
+    name: "Salon 22 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+
+  - state_topic: "home/sensors/dht11_1_humidity"
+    name: "Salon 22 Humidity"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - state_topic: "home/sensors/dht11_2_temperature"
+    name: "Serverroom 17 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+
+  - state_topic: "home/sensors/dht11_2_humidity"
+    name: "Serverroom 17 Humidity"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.sensor_value }}"
+
+
+  - state_topic: "home/sensors/dht11_3_temperature"
+    name: "Garage 27 Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - state_topic: "home/sensors/dht11_3_humidity"
+    name: "Garage 27 Humidity"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.sensor_value }}"
+
+
+  - state_topic: "home/sensors/ds18b20_temperature"
+    name: "Piscine Temperature"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.sensor_value }}"
+
+  - state_topic: "home/sensors/ds18b20_temperature"
+    name: "Piscine Fahrenheit"
+    unit_of_measurement: "°F"
+    value_template: "{{ (float(value_json.sensor_value) * 9/5 + 32) | round(2) }}"
+
+  - state_topic: "home/sensors/pms5003_pm2.5"
+    name: "PMS5003 PM2.5"
+    unit_of_measurement: "µg/m³"
+  - state_topic: "home/sensors/pms5003_pm10"
+    name: "PMS5003 PM10"
+    unit_of_measurement: "µg/m³"
+   
+Binary_sensor:
+  - state_topic: "home/sensors/reed_sensor_1_state"
+    name: "Z1-5 Porte Garage Maison"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/reed_sensor_2_state"
+    name: "Z5-26 Porte Patio"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/reed_sensor_3_state"
+    name: "Z6-16 Fenetre Sous-Sol"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/reed_sensor_4_state"
+    name: "Z7-20 Porte Entree"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/reed_sensor_5_state"
+    name: "Z8-21 Porte Ext Garage"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/pir_sensor_1_state"
+    name: "Z2-6 Pir Cuisine"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/pir_sensor_2_state"
+    name: "Z3-13 Pir Sous-sol"
+    payload_on: "1"
+    payload_off: "0"
+
+  - state_topic: "home/sensors/pir_sensor_3_state"
+    name: "Z4-19 Pir Garage"
+    payload_on: "1"
+    payload_off: "0"
