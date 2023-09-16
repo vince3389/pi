@@ -4,8 +4,6 @@ import Adafruit_DHT
 import RPi.GPIO as GPIO
 import paho.mqtt.client as mqtt
 
-# ... (MQTT and other configurations) ...
-
 #MQTT broker configuration
 mqtt_broker = "10.1.1.16"  # Change to the IP address of your MQTT broker
 mqtt_port = 1883
@@ -19,6 +17,7 @@ client.username_pw_set(mqtt_username, mqtt_password)
 client.connect(mqtt_broker, mqtt_port, 60)
 
 
+# Publish sensor readings
 def publish_sensor_reading(sensor_name, sensor_value):
     payload = {
         "sensor_name": sensor_name,
@@ -27,19 +26,22 @@ def publish_sensor_reading(sensor_name, sensor_value):
     mqtt_topic_with_sensor = f"{mqtt_topic}/{sensor_name}"
     client.publish(mqtt_topic_with_sensor, json.dumps(payload))
 
-def read_and_publish_sensor_data(sensor):
-    try:
+# DHT11 Sensor Configuration
+dht_sensors = [
+    {"name": "dht11_1", "pin": 22},
+    {"name": "dht11_2", "pin": 17},
+    {"name": "dht11_3", "pin": 27}
+]
+
+while True:
+    # Read DHT11 sensors
+    for sensor in dht_sensors:
         humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, sensor["pin"])
         if humidity is not None and temperature is not None:
             publish_sensor_reading(sensor["name"] + "_temperature", round(temperature, 2))
             publish_sensor_reading(sensor["name"] + "_humidity", round(humidity, 2))
-        else:
-            print(f"Failed to read sensor data for {sensor['name']}")
-    except Exception as e:
-        print(f"Error reading sensor {sensor['name']}: {str(e)}")
 
-while True:
-    for sensor in dht_sensors:
-        read_and_publish_sensor_data(sensor)
+    time.sleep(5)  # Publish the data every 5 seconds
+
+
     
-    time.sleep(5)
